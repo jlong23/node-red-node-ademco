@@ -1,6 +1,6 @@
 {
   "name": "node-red-node-ademco",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A Node-RED node to Parse Ademco Panel Messages.",
   "dependencies": {
   },
@@ -27,6 +27,6 @@
       "name": "Jay Long"
     }
   ],
-  "readme": "node-red-node-ademco\n====================\n\n",
+  "readme": "node-red-node-ademco\n====================\n\n<a href=\"http://nodered.org\" target=\"_new\">Node-RED</a> node that parses AD2USB/Ademco Panel Messages.\n\nInstall\n-------\n\nRun the following command in the root directory of your Node-RED install\n\n        npm install node-red-node-ademco\n\nUsage\n-----\n\nUsing either the Serial Node as an input or through MQTT, where the msg.payload contains the AD2USB panel decoded message, the node will parse and format the message into a javascript object and either return every message formated or only when the primary arming state has changed from the prior state. (note that a \"Deploy\" will flush prior states and the next messages will be sent in the output.\n\n{ \n  \"partitionNumber\": 2, \n  \"messageLine1\": \"2 ARMED AWAY\", \n  \"messageLine2\": \"** ALL SECURE *\", \n  \"lastUpdated\": \"2015-07-21T13:31:11.526Z\", \n  \"systemState\": 3,\n   \"lastTransitionDate\": \"2015-07-21T13:31:11.526Z\", \n  \"lastSystemState\": 1,\n  \"panels\": [ 17 ],\n  \"zoneFaults\": [],\n  \"partitionReady\": false, \n  \"partitionArmedAway\": true, \n  \"partitionArmedStay\": false,\n  \"backlight\": false,\n  \"programmingMode\": false, \n  \"beepCount\": "0",\n  \"zoneBypass\": false, \n  \"linePower\": true,\n  \"chimeEnabled\": true, \n  \"alarmOccurred\": false,\n  \"alarmSounding\": false,\n  \"batteryLow\": false,\n  \"delayOff\": false,\n  \"fireAlarm\": false,\n  \"zoneFaulted\": false, \n  \"perimeterOnly\": false,\n  \"stateChange\": true \n}\n\nSystemState values\n	DISARMED : 0,       // Partition is in an unknown state or initialized\n	NOT_READY : 1,      // Partition is Disarmed but but not ready to arm (One or more Faults)\n	READY : 2,          // Partition is Disarmed but ready to arm (No Faults)\n	ARMED_AWAY : 3,     // Partition is Armed Away, Motion Detection active\n	ARMED_STAY : 4,     // Partition is Armed Stat, Motion Detection not active\n	ARMED_INSTANT : 5,  // Partition is Armed Instant, Motion Detection not active (No Entry Delay)\n	ALARM : 6,          // Partition is in a Faulted Alarm State\n	FIRE_ALARM : 7      // Partition is in a Faulted Fire Alarm State\n\n\n",
   "readmeFilename": "README.md"  
 }
