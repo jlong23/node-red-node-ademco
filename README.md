@@ -2,7 +2,7 @@
 
 Parses the panel messages from the NuTech AD2USB via a serial port input node, converts it into a JavaScript object and either reports partition state changes or converts each message into a payload.
 
-The Payload consists of a Single Partion state object:
+The Output Payload consists of a Single Partion state object:
 ```JavaScript
 partitionState ={
 	partitionNumber : 1,         // Indicates the Partition ID
@@ -45,3 +45,12 @@ var AlarmStateEnum = {
 	FIRE_ALARM : 7      // Partition is in a Faulted Fire Alarm State
 };
 ```
+
+To order a AD2USB Module for your Ademco Alarm Panel
+http://www.alarmdecoder.com/catalog/advanced_search_result.php?keywords=AD2USB&search_in_description=1&x=0&y=0
+
+And the Protocol/Strings exported from the Panel
+http://www.alarmdecoder.com/wiki/index.php/Protocol
+
+
+
