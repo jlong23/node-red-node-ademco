@@ -6,14 +6,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/node-red/node-red-nodes/tree/master/social/ademco"
+    "url": "https://github.com/jlong23/node-red-node-ademco"
   },
   "license": "Apache-v2.0",
   "keywords": [
     "node-red",
     "ademco",
     "security",
-    "alarm"
+    "alarm",
+    "NuTech",
+    "ad2usb"
   ],
   "node-red": {
     "nodes": {
