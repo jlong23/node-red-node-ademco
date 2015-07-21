@@ -1,0 +1,37 @@
+<script type="text/x-red" data-template-name="Ademco">
+    <div class="form-row node-input-report">
+        <label for="node-input-report"><i class="fa fa-list-ul"></i> Report</label>
+        <select id="node-input-report" style="width:125px !important">
+          <option value="all">All Data</option>
+          <option value="state">State Changes</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="Ademco">
+    <p>Parses raw Ademco Panel Input stream and either reports State Changes or All data out as Javascript Objects</p>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('Ademco',{
+        category: 'advanced',
+        color:"#FF8080",
+        defaults: {
+            report: {value: "all",required:true},
+            name: {value:""}
+        },
+        inputs:1,
+        outputs:1,
+        icon: "ademco.png",
+        label: function() {
+            return this.name ? this.name : "Ademco";
+        }
+    });
+</script>
+
+
+
