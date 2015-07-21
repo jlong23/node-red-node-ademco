@@ -198,9 +198,9 @@ module.exports = function(RED) {
 							}
 
 							AlarmPartitionState.messageLine1 = segments[3]
-									.substring(0, 16).trim();
+									.substring(1, 17).trim();
 							AlarmPartitionState.messageLine2 = segments[3]
-									.substring(16, 32).trim();
+									.substring(17, 32).trim();
 							
 							
 							node.systemState[partitionNum] = AlarmPartitionState;	
