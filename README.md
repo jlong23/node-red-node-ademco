@@ -3,7 +3,7 @@
 Parses the panel messages from the NuTech AD2USB via a serial port input node, converts it into a JavaScript object and either reports partition state changes or converts each message into a payload.
 
 The Payload consists of a Single Partion state object:
-
+'''
 partitionState ={
 	partitionNumber : 1,         // Indicates the Partition ID
 	messageLine1 : "",           // Alpha panel Message Line 1
@@ -44,3 +44,4 @@ var AlarmStateEnum = {
 	ALARM : 6,          // Partition is in a Faulted Alarm State
 	FIRE_ALARM : 7      // Partition is in a Faulted Fire Alarm State
 };
+'''
