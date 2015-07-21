@@ -1,6 +1,6 @@
 {
   "name": "node-red-node-ademco",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A Node-RED node to Parse Ademco Panel Messages.",
   "dependencies": {
   },
