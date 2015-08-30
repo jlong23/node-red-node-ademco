@@ -1,7 +1,7 @@
 /**
- * Copyright 2014, 2015 Andrew D Lindsay
+ * Copyright 2015 Jay Long
  * 
- * @AndrewDLindsay http://blog.thiseldo.co.uk
+ * @JayLong https://github.com/jlong23
  * 
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,8 @@
 module.exports = function(RED) {
 	"use strict";
 
+	var CurrentState = new Array(2);			
+	
 	var bitPositions = {
 			BIT_READY : 0,
 			BIT_ARMED_AWAY : 1,
@@ -49,191 +51,188 @@ module.exports = function(RED) {
 			FIRE_ALARM : 7
 		};
 
-
-	function Ademco(n) {
+	function AdemcoListener(n) {
 		RED.nodes.createNode(this, n);
 		this.config = RED.nodes.getNode(n.config);
 		var node = this;
-
-		if (node.systemState == null) {
-			node.systemState = new Array(2);
+		
+		if (CurrentState === null) {
+			CurrentState = new Array(2);
 		}
 		
 		node.status({});
 		node.on( "input", function(msg) {
-							this.report = n.report || msg.report || "all";
+			this.report = n.report || msg.report || "all";
 
-							var payload = "";
+			var payload = "";
 
-							if( typeof msg.payload == 'object' ) {
-								payload = msg.payload.toString();
-							} else {
-								payload = msg.payload;
-							}
+			if( typeof msg.payload == 'object' ) {
+				payload = msg.payload.toString();
+			} else {
+				payload = msg.payload;
+			}
 
-							if( payload !== undefined && payload.length > 0 && payload.substring(0,1) == '[' ) {
+			if( payload !== undefined && payload.length > 0 && payload.substring(0,1) == '[' ) {
 
-							var segments = payload.split(',');
+				var segments = payload.split(',');
 
-							var panels = parsePanels(segments[2]);
-							var partitionNum = 1;
-							for( var i = 0; i < panels.length; i ++ ) {
-								if( panels[i] === 17 ) {
-									partitionNum = 2;
-								}
-							}
-							
-							var AlarmPartitionState = getPartition( node.systemState, partitionNum );
+				var panels = parsePanels(segments[2]);
+				var partitionNum = 1;
+				for( var i = 0; i < panels.length; i ++ ) {
+					if( panels[i] === 17 ) {
+						partitionNum = 2;
+					}
+				}
 
-							AlarmPartitionState.lastUpdated = new Date();
-							AlarmPartitionState.panels = panels;
-							
-							// Make a backup of the Current Partition State
-							AlarmPartitionState.lastSystemState = AlarmPartitionState.systemState;
+				var AlarmPartitionState = getPartition( CurrentState, partitionNum );
 
-							var bitsRaw = segments[0];
+				AlarmPartitionState.lastUpdated = new Date();
+				AlarmPartitionState.panels = panels;
 
-							for (var i = 1; i < 16; i++) {
-								var value = (bitsRaw.substring(i, i + 1) == '1');
+				// Make a backup of the Current Partition State
+				AlarmPartitionState.lastSystemState = AlarmPartitionState.systemState;
 
-								switch (i - 1) {
-								case bitPositions.BIT_READY:
-									AlarmPartitionState.partitionReady = value;
-									break;
+				var bitsRaw = segments[0];
 
-								case bitPositions.BIT_ARMED_AWAY:
-									AlarmPartitionState.partitionArmedAway = value;
-									break;
+				for (var i = 1; i < 16; i++) {
+					var value = (bitsRaw.substring(i, i + 1) == '1');
 
-								case bitPositions.BIT_ARMED_STAY:
-									AlarmPartitionState.partitionArmedStay = value;
-									break;
+					switch (i - 1) {
+					case bitPositions.BIT_READY:
+						AlarmPartitionState.partitionReady = value;
+						break;
 
-								case bitPositions.BIT_BACKLIGHT:
-									AlarmPartitionState.backlight = value;
-									break;
+					case bitPositions.BIT_ARMED_AWAY:
+						AlarmPartitionState.partitionArmedAway = value;
+						break;
 
-								case bitPositions.BIT_PROGRAMMING:
-									AlarmPartitionState.programmingMode = value;
-									break;
+					case bitPositions.BIT_ARMED_STAY:
+						AlarmPartitionState.partitionArmedStay = value;
+						break;
 
-								case bitPositions.BIT_BEEP_COUNT:
-									AlarmPartitionState.beepCount = bitsRaw
-											.substring(i, i + 1);
-									break;
+					case bitPositions.BIT_BACKLIGHT:
+						AlarmPartitionState.backlight = value;
+						break;
 
-								case bitPositions.BIT_ZONE_BYPASS:
-									AlarmPartitionState.zoneBypass = value;
-									break;
+					case bitPositions.BIT_PROGRAMMING:
+						AlarmPartitionState.programmingMode = value;
+						break;
 
-								case bitPositions.BIT_AC_POWER:
-									AlarmPartitionState.linePower = value;
-									break;
+					case bitPositions.BIT_BEEP_COUNT:
+						AlarmPartitionState.beepCount = bitsRaw
+						.substring(i, i + 1);
+						break;
 
-								case bitPositions.BIT_CHIME_ENABLED:
-									AlarmPartitionState.chimeEnabled = value;
-									break;
+					case bitPositions.BIT_ZONE_BYPASS:
+						AlarmPartitionState.zoneBypass = value;
+						break;
 
-								case bitPositions.BIT_ALARM_STICKY:
-									AlarmPartitionState.alarmOccurred = value;
-									break;
+					case bitPositions.BIT_AC_POWER:
+						AlarmPartitionState.linePower = value;
+						break;
 
-								case bitPositions.BIT_ALARM_SOUNDER:
-									AlarmPartitionState.alarmSounding = value;
-									break;
+					case bitPositions.BIT_CHIME_ENABLED:
+						AlarmPartitionState.chimeEnabled = value;
+						break;
 
-								case bitPositions.BIT_BAT_LOW:
-									AlarmPartitionState.batteryLow = value;
-									break;
+					case bitPositions.BIT_ALARM_STICKY:
+						AlarmPartitionState.alarmOccurred = value;
+						break;
 
-								case bitPositions.BIT_ENTRY_DELAY_OFF:
-									AlarmPartitionState.delayOff = value;
-									break;
+					case bitPositions.BIT_ALARM_SOUNDER:
+						AlarmPartitionState.alarmSounding = value;
+						break;
 
-								case bitPositions.BIT_FIRE:
-									AlarmPartitionState.fireAlarm = value;
-									break;
+					case bitPositions.BIT_BAT_LOW:
+						AlarmPartitionState.batteryLow = value;
+						break;
 
-								case bitPositions.BIT_ZONE_FAULT:
-									AlarmPartitionState.zoneFaulted = value;
-									break;
+					case bitPositions.BIT_ENTRY_DELAY_OFF:
+						AlarmPartitionState.delayOff = value;
+						break;
 
-								case bitPositions.BIT_PERIMETER_ONLY:
-									AlarmPartitionState.perimeterOnly = value;
-									break;
+					case bitPositions.BIT_FIRE:
+						AlarmPartitionState.fireAlarm = value;
+						break;
 
-								default:
-									break;
-								}
+					case bitPositions.BIT_ZONE_FAULT:
+						AlarmPartitionState.zoneFaulted = value;
+						break;
 
-								// Update the Current Partition State
-								// By Default, the System/Partition is Disarmed
-								AlarmPartitionState.systemState = AlarmStateEnum.DISARMED;
+					case bitPositions.BIT_PERIMETER_ONLY:
+						AlarmPartitionState.perimeterOnly = value;
+						break;
 
-								// Disabled, spams quite a bit as zones go in an
-								// out of ready state
-								if (!AlarmPartitionState.partitionReady) {
-									AlarmPartitionState.systemState = AlarmStateEnum.NOT_READY;
-								} else {
-									AlarmPartitionState.systemState = AlarmStateEnum.READY;
-								}
+					default:
+						break;
+					}
 
-								if (AlarmPartitionState.partitionArmedAway) {
-									AlarmPartitionState.systemState = AlarmStateEnum.ARMED_AWAY;
-								}
+					// Update the Current Partition State
+					// By Default, the System/Partition is Disarmed
+					AlarmPartitionState.systemState = AlarmStateEnum.DISARMED;
 
-								if (AlarmPartitionState.partitionArmedStay) {
-									AlarmPartitionState.systemState = AlarmStateEnum.ARMED_STAY;
-								}
+					// Disabled, spams quite a bit as zones go in an
+					// out of ready state
+					if (!AlarmPartitionState.partitionReady) {
+						AlarmPartitionState.systemState = AlarmStateEnum.NOT_READY;
+					} else {
+						AlarmPartitionState.systemState = AlarmStateEnum.READY;
+					}
 
-								if (AlarmPartitionState.partitionArmedStay
-										&& AlarmPartitionState.delayOff) {
-									AlarmPartitionState.systemState = AlarmStateEnum.ARMED_INSTANT;
-								}
+					if (AlarmPartitionState.partitionArmedAway) {
+						AlarmPartitionState.systemState = AlarmStateEnum.ARMED_AWAY;
+					}
 
-								if (AlarmPartitionState.alarmSounding) {
-									AlarmPartitionState.systemState = AlarmStateEnum.ALARM;
-								}
+					if (AlarmPartitionState.partitionArmedStay) {
+						AlarmPartitionState.systemState = AlarmStateEnum.ARMED_STAY;
+					}
 
-								if (AlarmPartitionState.fireAlarm) {
-									AlarmPartitionState.systemState = AlarmStateEnum.FIRE_ALARM;
-								}
+					if (AlarmPartitionState.partitionArmedStay
+							&& AlarmPartitionState.delayOff) {
+						AlarmPartitionState.systemState = AlarmStateEnum.ARMED_INSTANT;
+					}
 
-								if (AlarmPartitionState.lastSystemState != AlarmPartitionState.systemState) {
-									AlarmPartitionState.lastTransitionDate = AlarmPartitionState.lastUpdated;
-									AlarmPartitionState.stateChange = true;
-								} else {
-									AlarmPartitionState.stateChange = false;
-								}
-							}
+					if (AlarmPartitionState.alarmSounding) {
+						AlarmPartitionState.systemState = AlarmStateEnum.ALARM;
+					}
 
-							AlarmPartitionState.messageLine1 = segments[3]
-									.substring(1, 17).trim();
-							AlarmPartitionState.messageLine2 = segments[3]
-									.substring(17, 32).trim();
-							
-							
-							node.systemState[partitionNum] = AlarmPartitionState;	
-							
-							var sendMessage = false;
-							if( this.report === "state" ) {
-								if( AlarmPartitionState.stateChange  ) {
-									sendMessage = true;
-								}
-							} else { 
-								sendMessage = true;
-                         	}
+					if (AlarmPartitionState.fireAlarm) {
+						AlarmPartitionState.systemState = AlarmStateEnum.FIRE_ALARM;
+					}
 
-							if( sendMessage ) {
-								msg.topic = "iot/evt/alarm/fmt/json";
-								msg.payload = AlarmPartitionState;
-								node.send(msg);
-							}
-							node.status({});
-}
-						});
+					if (AlarmPartitionState.lastSystemState != AlarmPartitionState.systemState) {
+						AlarmPartitionState.lastTransitionDate = AlarmPartitionState.lastUpdated;
+						AlarmPartitionState.stateChange = true;
+					} else {
+						AlarmPartitionState.stateChange = false;
+					}
+				}
+
+				AlarmPartitionState.messageLine1 = segments[3].substring(1, 17).trim();
+				AlarmPartitionState.messageLine2 = segments[3].substring(17, 32).trim();
+
+
+				CurrentState[partitionNum] = AlarmPartitionState;	
+				
+				var sendMessage = false;
+				if( this.report === "state" ) {
+					if( AlarmPartitionState.stateChange  ) {
+						sendMessage = true;
+					}
+				} else { 
+					sendMessage = true;
+				}
+
+				if( sendMessage ) {
+					msg.topic = "iot/evt/alarm/fmt/json";
+					msg.payload = AlarmPartitionState;
+					node.send(msg);
+				}
+				node.status({});
+			}
+		});
 	}
-	RED.nodes.registerType("Ademco", Ademco);
+	RED.nodes.registerType("AdemcoListener", AdemcoListener);
 	
 	function getPartition( systemState, partitionNumber ) {
 		var partitionState ={
@@ -295,4 +294,20 @@ module.exports = function(RED) {
 		}
 		return panels;
 	}
+
+	function AdemcoStatus(n) {
+		RED.nodes.createNode(this, n);
+		this.config = RED.nodes.getNode(n.config);
+		var node = this;
+		
+		node.status({});
+		node.on( "input", function(msg) {
+            this.partition = msg.partition || n.partition || "1";
+		
+			msg.topic = "iot/evt/alarm/fmt/json";
+			msg.payload =  CurrentState[this.partition];
+			node.send(msg);
+		});
+	}
+	RED.nodes.registerType("AdemcoStatus", AdemcoStatus);
 }

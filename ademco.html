@@ -1,4 +1,4 @@
-<script type="text/x-red" data-template-name="Ademco">
+<script type="text/x-red" data-template-name="AdemcoListener">
     <div class="form-row node-input-report">
         <label for="node-input-report"><i class="fa fa-list-ul"></i> Report</label>
         <select id="node-input-report" style="width:125px !important">
@@ -12,7 +12,7 @@
     </div>
 </script>
 
-<script type="text/x-red" data-help-name="Ademco">
+<script type="text/x-red" data-help-name="AdemcoListener">
     <p>Parses the panel messages from the NuTech AD2USB via a serial port input node, converts it into a JavaScript object and either reports partition state changes or converts each message into a payload.</p>
 	<p>The Output Payload consists of a Single Partion state object:</p>
     <pre>
@@ -68,7 +68,7 @@ http://www.alarmdecoder.com/wiki/index.php/Protocol </p>
 </script>
 
 <script type="text/javascript">
-    RED.nodes.registerType('Ademco',{
+    RED.nodes.registerType('AdemcoListener',{
         category: 'advanced',
         color:"#FF8080",
         defaults: {
@@ -79,7 +79,41 @@ http://www.alarmdecoder.com/wiki/index.php/Protocol </p>
         outputs:1,
         icon: "ademco.png",
         label: function() {
-            return this.name ? this.name : "Ademco";
+            return this.name ? this.name : "AdemcoListener";
+        }
+    });
+</script>
+
+
+
+<script type="text/x-red" data-template-name="AdemcoStatus">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row node-input-partition">
+        <label for="node-input-partition"><i class="fa fa-list-ul"></i> Partition</label>
+        <select id="node-input-partition" style="width:125px !important">
+          <option value="1">Partition 1</option>
+          <option value="2">Partition 2</option>
+        </select>
+    </div>
+
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('AdemcoStatus',{
+        category: 'advanced',
+        color:"#FF8080",
+        defaults: {
+            name: {value:""},
+            partition: {value: "1",required:true}
+        },
+        inputs:1,
+        outputs:1,
+        icon: "ademco.png",
+        label: function() {
+            return this.name ? this.name : "AdemcoStatus";
         }
     });
 </script>

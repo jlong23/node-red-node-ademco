@@ -1,9 +1,21 @@
 # node-red-node-ademco
 
-Parses the panel messages from the NuTech AD2USB via a serial port input node, converts it into a JavaScript object and either reports partition state changes or converts each message into a payload.
+Two nodes used to work with the AD2USB Data stream either from a Serial Node or MQTT message.
 
-The Output Payload consists of a Single Partion state object:
-```JavaScript
+## Installation
+
+```sh
+$ npm i node-red-node-ademco
+```
+
+## Documentation
+
+AdemcoListener Node:
+====================
+
+Parses the panel messages from the NuTech AD2USB via a serial port input node or MQTT node, converts it into a JavaScript object and either reports partition state changes or every input message; as defined in the node configuration, into the JavaScript object specified below.
+
+```js
 partitionState ={
 	partitionNumber : 1,         // Indicates the Partition ID
 	messageLine1 : "",           // Alpha panel Message Line 1
@@ -35,8 +47,8 @@ partitionState ={
 ```
 
 
-The Partition state Values:
-```JavaScript
+The Partition state Enum Values:
+```js
 var AlarmStateEnum = {
 	DISARMED : 0,       // Partition is in an unknown state or initialized
 	NOT_READY : 1,      // Partition is Disarmed but but not ready to arm (One or more Faults)
@@ -49,8 +61,29 @@ var AlarmStateEnum = {
 };
 ```
 
-Example Nod-Red 'function' that formats Partition State Messages, and routes them according to criticality:
-```JavaScript
+AdemcoStatus Node:
+====================
+
+Using the current panel message state from the Listener Node, this will either use the message.partion == Partition Number or the Node Configuration to export the current partition state on the output message.payload.  Use this node to query the current alarm panel state(s).
+
+Example Flow
+```js
+[{"id":"a019b186.5fe65","type":"AdemcoStatus","name":"","partition":"2","x":561,"y":426,"z":"88661d46.7799e","wires":[["a328679e.5cd798"]]},{"id":"a328679e.5cd798","type":"debug","name":"","active":true,"console":"false","complete":"true","x":726,"y":425,"z":"88661d46.7799e","wires":[]},{"id":"373bc3f2.c8c43c","type":"inject","name":"","topic":"","payload":"partition","payloadType":"date","repeat":"","crontab":"","once":false,"x":175,"y":425,"z":"88661d46.7799e","wires":[["6f7f728.f90808c"]]},{"id":"6f7f728.f90808c","type":"change","action":"replace","property":"partition","from":"","to":"1","reg":false,"name":"","x":349,"y":425,"z":"88661d46.7799e","wires":[["a019b186.5fe65"]]}]
+```
+
+If you have any questions, just [open an issue](https://github.com/jlong23/node-red-node-ademco/issues/mew).
+
+To order a AD2USB Module for your Ademco Alarm Panel
+ - [NuTech AD2USB Order Site](http://www.alarmdecoder.com/catalog/advanced_search_result.php?keywords=AD2USB&search_in_description=1&x=0&y=0)
+
+And the Protocol/Strings exported from the Panel
+ - [AD2USB Protocol](http://www.alarmdecoder.com/wiki/index.php/Protocol)
+
+
+
+## Example Function
+Example Nod-Red 'function' that formats Partition State Messages, and routes them according to importance:
+```js
 var partition = msg.payload;
 
 if( partition !== undefined ) {
@@ -120,12 +153,5 @@ if( partition !== undefined ) {
 // Fail to parse, return nothing
 return [null, null];
 ```
-
-To order a AD2USB Module for your Ademco Alarm Panel
-http://www.alarmdecoder.com/catalog/advanced_search_result.php?keywords=AD2USB&search_in_description=1&x=0&y=0
-
-And the Protocol/Strings exported from the Panel
-http://www.alarmdecoder.com/wiki/index.php/Protocol
-
 
 
