@@ -63,7 +63,17 @@ module.exports = function(RED) {
 		node.on( "input", function(msg) {
 							this.report = n.report || msg.report || "all";
 
-							var segments = msg.payload.split(',');
+							var payload = "";
+
+							if( typeof msg.payload == 'object' ) {
+								payload = msg.payload.toString();
+							} else {
+								payload = msg.payload;
+							}
+
+							if( payload !== undefined && payload.length > 0 && payload.substring(0,1) == '[' ) {
+
+							var segments = payload.split(',');
 
 							var panels = parsePanels(segments[2]);
 							var partitionNum = 1;
@@ -220,6 +230,7 @@ module.exports = function(RED) {
 								node.send(msg);
 							}
 							node.status({});
+}
 						});
 	}
 	RED.nodes.registerType("Ademco", Ademco);
@@ -270,7 +281,7 @@ module.exports = function(RED) {
 		var padMask = "00000000000000000000000000000000";
 		var parsedEvent = data;
 
-		if (parsedEvent !== null && parsedEvent.length > 12) {
+		if (parsedEvent !== undefined && parsedEvent.length > 12) {
 			parsedMask = parseInt(parsedEvent.substring(3, 11), 16).toString(2);
 		}
 
